@@ -1,32 +1,32 @@
-require('dotenv').config()
+const express = require('express');
+const cors = require('cors');
+const mongoose = require('mongoose');
 
-const express = require('express')
-const mongoose = require('mongoose')
-const workoutRoutes = require('./routes/workouts')
+require('dotenv').config();
 
-// express app
-const app = express()
+const app = express();
+const port = process.env.PORT || 5000;
 
-// middleware
+app.use(cors());
 app.use(express.json())
 
-app.use((req, res, next) => {
-  console.log(req.path, req.method)
-  next()
+//mongo db connection
+const uri = process.env.ATLAS_URI;
+mongoose.connect (uri, { useNewUrlParser : true, useUnifiedTopology : true});
+
+const connection = mongoose.connection;
+connection.once('open', () => {
+    console.log("Mongo DB connection established successfully");
 })
 
-// routes
-app.use('/api/workouts', workoutRoutes)
 
-// connect to db
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log('connected to database')
-    // listen to port
-    app.listen(process.env.PORT, () => {
-      console.log('listening for requests on port', process.env.PORT)
-    })
-  })
-  .catch((err) => {
-    console.log(err)
-  }) 
+
+const feedbackRouter = require('./routes/feedback');
+
+app.use('/feedback', feedbackRouter);
+
+
+
+app.listen(port, () => {
+    console.log(`Server is running on port:-${port}`);
+});
